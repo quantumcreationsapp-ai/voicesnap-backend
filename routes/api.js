@@ -3,6 +3,21 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const { callClaude } = require('../services/claude');
 
+// Helper function to parse JSON from Claude responses (strips markdown code blocks)
+function parseJSON(response) {
+  // Remove markdown code blocks if present
+  let cleaned = response.trim();
+  if (cleaned.startsWith('```json')) {
+    cleaned = cleaned.slice(7);
+  } else if (cleaned.startsWith('```')) {
+    cleaned = cleaned.slice(3);
+  }
+  if (cleaned.endsWith('```')) {
+    cleaned = cleaned.slice(0, -3);
+  }
+  return JSON.parse(cleaned.trim());
+}
+
 // Apply auth middleware to all routes
 router.use(auth);
 
@@ -97,7 +112,7 @@ JSON array of flashcards:`;
     const response = await callClaude(prompt, 2000);
 
     try {
-      const flashcards = JSON.parse(response);
+      const flashcards = parseJSON(response);
       res.json({ flashcards });
     } catch (parseError) {
       // Return raw response if JSON parsing fails
@@ -128,7 +143,7 @@ JSON array of questions:`;
     const response = await callClaude(prompt, 2000);
 
     try {
-      const questions = JSON.parse(response);
+      const questions = parseJSON(response);
       res.json({ questions });
     } catch (parseError) {
       res.json({ questions: response });
@@ -158,7 +173,7 @@ JSON array of action items:`;
     const response = await callClaude(prompt, 1500);
 
     try {
-      const actionItems = JSON.parse(response);
+      const actionItems = parseJSON(response);
       res.json({ actionItems });
     } catch (parseError) {
       res.json({ actionItems: response });
@@ -188,7 +203,7 @@ JSON array of highlights:`;
     const response = await callClaude(prompt, 1500);
 
     try {
-      const highlights = JSON.parse(response);
+      const highlights = parseJSON(response);
       res.json({ highlights });
     } catch (parseError) {
       res.json({ highlights: response });
@@ -297,7 +312,7 @@ JSON array of FAQs:`;
     const response = await callClaude(prompt, 2000);
 
     try {
-      const faqs = JSON.parse(response);
+      const faqs = parseJSON(response);
       res.json({ faqs });
     } catch (parseError) {
       res.json({ faqs: response });
@@ -327,7 +342,7 @@ JSON mind map:`;
     const response = await callClaude(prompt, 1500);
 
     try {
-      const mindmap = JSON.parse(response);
+      const mindmap = parseJSON(response);
       res.json({ mindmap });
     } catch (parseError) {
       res.json({ mindmap: response });
