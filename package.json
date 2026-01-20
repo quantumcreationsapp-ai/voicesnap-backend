@@ -1,0 +1,19 @@
+{
+  "name": "voicesnap-backend",
+  "version": "1.0.0",
+  "description": "VoiceSnap API - AI transcription and voice notes",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "@anthropic-ai/sdk": "^0.39.0",
+    "helmet": "^7.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
