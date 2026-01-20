@@ -25,125 +25,59 @@ All `/api` endpoints require the `x-api-key` header with your `API_SECRET_KEY`.
 
 ## Endpoints
 
-### Health Check
+| Method | Endpoint | Description | Response Key |
+|--------|----------|-------------|--------------|
+| GET | / | Health check | status, message, timestamp |
+| POST | /api/notes | Structured notes | notes |
+| POST | /api/summary | Summary | summary |
+| POST | /api/chat | AI chat (requires question) | answer |
+| POST | /api/quiz | Quiz questions | questions |
+| POST | /api/flashcards | Flashcards | flashcards |
+| POST | /api/mindmap | Mind map | mindmap |
+| POST | /api/bullets | Bullet points | bullets |
+| POST | /api/paraphrase | Paraphrase | paraphrased |
+| POST | /api/highlights | Key highlights | highlights |
+| POST | /api/faq | FAQ | faqs |
+| POST | /api/punctuation | Add punctuation | punctuated |
+| POST | /api/formal | Formal tone | formal |
+| POST | /api/casual | Casual tone | casual |
 
-```
-GET /
+## Request Body
+
+All POST endpoints (except /api/chat):
+```json
+{ "transcript": "Your transcript text here" }
 ```
 
-Response:
+/api/chat:
+```json
+{ "transcript": "Your transcript", "question": "Your question" }
+```
+
+## Example Responses
+
+### /api/summary
 ```json
 {
-  "status": "ok",
-  "message": "VoiceSnap API is running",
-  "timestamp": "2024-01-19T12:00:00.000Z"
+  "summary": "The meeting covered three main topics..."
 }
 ```
 
----
-
-### POST /api/summary
-
-Generate a concise summary of a transcript.
-
-**Request:**
-```json
-{
-  "transcript": "Your transcript text here..."
-}
-```
-
-**Response:**
-```json
-{
-  "summary": "A 3-5 paragraph summary of the transcript..."
-}
-```
-
----
-
-### POST /api/bullets
-
-Convert transcript to bullet points.
-
-**Request:**
-```json
-{
-  "transcript": "Your transcript text here..."
-}
-```
-
-**Response:**
-```json
-{
-  "bullets": "• Key point 1\n• Key point 2\n..."
-}
-```
-
----
-
-### POST /api/notes
-
-Transform transcript into structured notes with headers.
-
-**Request:**
-```json
-{
-  "transcript": "Your transcript text here..."
-}
-```
-
-**Response:**
-```json
-{
-  "notes": "# Main Topic\n\n## Section 1\n..."
-}
-```
-
----
-
-### POST /api/flashcards
-
-Create study flashcards from transcript.
-
-**Request:**
-```json
-{
-  "transcript": "Your transcript text here..."
-}
-```
-
-**Response:**
+### /api/flashcards
 ```json
 {
   "flashcards": [
-    {
-      "front": "What is X?",
-      "back": "X is defined as..."
-    }
+    { "front": "What is X?", "back": "X is..." }
   ]
 }
 ```
 
----
-
-### POST /api/quiz
-
-Generate multiple choice quiz questions.
-
-**Request:**
-```json
-{
-  "transcript": "Your transcript text here..."
-}
-```
-
-**Response:**
+### /api/quiz
 ```json
 {
   "questions": [
     {
-      "question": "What was the main topic discussed?",
+      "question": "What was discussed?",
       "options": ["Option A", "Option B", "Option C", "Option D"],
       "correctIndex": 0
     }
@@ -151,178 +85,33 @@ Generate multiple choice quiz questions.
 }
 ```
 
----
-
-### POST /api/action-items
-
-Extract action items and tasks from transcript.
-
-**Request:**
-```json
-{
-  "transcript": "Your transcript text here..."
-}
-```
-
-**Response:**
-```json
-{
-  "actionItems": [
-    {
-      "task": "Complete the report",
-      "assignee": "John",
-      "deadline": "Friday"
-    }
-  ]
-}
-```
-
----
-
-### POST /api/highlights
-
-Extract key quotes and important moments.
-
-**Request:**
-```json
-{
-  "transcript": "Your transcript text here..."
-}
-```
-
-**Response:**
-```json
-{
-  "highlights": [
-    "This is a key quote from the transcript",
-    "Another important statement"
-  ]
-}
-```
-
----
-
-### POST /api/chat
-
-Ask questions about the transcript.
-
-**Request:**
-```json
-{
-  "transcript": "Your transcript text here...",
-  "question": "What was the main decision made?"
-}
-```
-
-**Response:**
-```json
-{
-  "answer": "The main decision was to..."
-}
-```
-
----
-
-### POST /api/paraphrase
-
-Rewrite transcript in a different tone.
-
-**Request:**
-```json
-{
-  "transcript": "Your transcript text here...",
-  "tone": "formal"
-}
-```
-
-Supported tones: `formal`, `casual`, `professional`
-
-**Response:**
-```json
-{
-  "paraphrased": "Rewritten text in the specified tone..."
-}
-```
-
----
-
-### POST /api/translate
-
-Translate text to another language.
-
-**Request:**
-```json
-{
-  "text": "Text to translate...",
-  "targetLanguage": "Spanish"
-}
-```
-
-**Response:**
-```json
-{
-  "translated": "Texto traducido..."
-}
-```
-
----
-
-### POST /api/faq
-
-Generate FAQ from transcript.
-
-**Request:**
-```json
-{
-  "transcript": "Your transcript text here..."
-}
-```
-
-**Response:**
-```json
-{
-  "faqs": [
-    {
-      "question": "What is the main topic?",
-      "answer": "The main topic is..."
-    }
-  ]
-}
-```
-
----
-
-### POST /api/mindmap
-
-Create a mind map structure from transcript.
-
-**Request:**
-```json
-{
-  "transcript": "Your transcript text here..."
-}
-```
-
-**Response:**
+### /api/mindmap
 ```json
 {
   "mindmap": {
     "center": "Main Topic",
     "branches": [
-      {
-        "topic": "Branch 1",
-        "subtopics": ["Subtopic A", "Subtopic B"]
-      }
+      { "topic": "Branch 1", "subtopics": ["A", "B"] }
     ]
   }
 }
 ```
 
-## Deployment
+### /api/highlights
+```json
+{
+  "highlights": ["Quote 1", "Quote 2", "Quote 3"]
+}
+```
 
-This API is designed to be deployed on Render.com with the following environment variables:
-- `ANTHROPIC_API_KEY`
-- `API_SECRET_KEY`
+### /api/faq
+```json
+{
+  "faqs": [
+    { "question": "What is X?", "answer": "X is..." }
+  ]
+}
+```
 
 ## Error Handling
 
@@ -338,3 +127,11 @@ HTTP Status Codes:
 - `400` - Bad Request (missing required fields)
 - `401` - Unauthorized (invalid API key)
 - `500` - Internal Server Error
+
+## Deployment
+
+This API is deployed on Render.com with environment variables:
+- `ANTHROPIC_API_KEY`
+- `API_SECRET_KEY`
+
+Live URL: https://voicesnap-backend-a8ec.onrender.com

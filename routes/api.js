@@ -240,28 +240,23 @@ Answer:`;
   }
 });
 
-// POST /paraphrase - Rewrite transcript in a different tone
+// POST /paraphrase - Rewrite transcript in a clear, professional manner
 router.post('/paraphrase', async (req, res) => {
   try {
-    const { transcript, tone } = req.body;
+    const { transcript } = req.body;
 
-    if (!transcript || !tone) {
-      return res.status(400).json({ error: 'Transcript and tone are required' });
+    if (!transcript) {
+      return res.status(400).json({ error: 'Transcript is required' });
     }
 
-    const validTones = ['formal', 'casual', 'professional'];
-    if (!validTones.includes(tone)) {
-      return res.status(400).json({ error: 'Tone must be formal, casual, or professional' });
-    }
-
-    const prompt = `Rewrite this transcript in a ${tone} tone. Make it clear, well-written, and polished while preserving all the original meaning and information.
+    const prompt = `Rewrite this transcript in a clear, professional manner. Make it well-written and polished while preserving all the original meaning. Remove filler words, false starts, and repetitions.
 
 Transcript:
 ${transcript}
 
-Rewritten (${tone} tone):`;
+Paraphrased:`;
 
-    const paraphrased = await callClaude(prompt, 2000);
+    const paraphrased = await callClaude(prompt, 4000);
     res.json({ paraphrased });
   } catch (error) {
     console.error('Paraphrase error:', error);
@@ -349,6 +344,78 @@ JSON mind map:`;
     }
   } catch (error) {
     console.error('Mindmap error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /punctuation - Add proper punctuation to transcript
+router.post('/punctuation', async (req, res) => {
+  try {
+    const { transcript } = req.body;
+
+    if (!transcript) {
+      return res.status(400).json({ error: 'Transcript is required' });
+    }
+
+    const prompt = `Add proper punctuation, capitalization, and paragraph breaks to this transcript. Keep the exact words but make it readable with proper grammar formatting.
+
+Transcript:
+${transcript}
+
+Punctuated:`;
+
+    const punctuated = await callClaude(prompt, 4000);
+    res.json({ punctuated });
+  } catch (error) {
+    console.error('Punctuation error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /formal - Rewrite transcript in formal tone
+router.post('/formal', async (req, res) => {
+  try {
+    const { transcript } = req.body;
+
+    if (!transcript) {
+      return res.status(400).json({ error: 'Transcript is required' });
+    }
+
+    const prompt = `Rewrite this transcript in a formal, professional tone suitable for business or academic contexts. Maintain the same information but use formal language and structure.
+
+Transcript:
+${transcript}
+
+Formal Version:`;
+
+    const formal = await callClaude(prompt, 4000);
+    res.json({ formal });
+  } catch (error) {
+    console.error('Formal error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /casual - Rewrite transcript in casual tone
+router.post('/casual', async (req, res) => {
+  try {
+    const { transcript } = req.body;
+
+    if (!transcript) {
+      return res.status(400).json({ error: 'Transcript is required' });
+    }
+
+    const prompt = `Rewrite this transcript in a casual, friendly, conversational tone. Make it easy to read and approachable while keeping the same information.
+
+Transcript:
+${transcript}
+
+Casual Version:`;
+
+    const casual = await callClaude(prompt, 4000);
+    res.json({ casual });
+  } catch (error) {
+    console.error('Casual error:', error);
     res.status(500).json({ error: error.message });
   }
 });
