@@ -7,6 +7,7 @@ const { requestLogger, errorLogger } = require('./middleware/logger');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const REQUEST_TIMEOUT_MS = 90000; // 90 seconds (longer than Claude's 60s timeout)
 
 // Validate required environment variables on startup
 if (!process.env.ANTHROPIC_API_KEY) {
@@ -60,6 +61,32 @@ const aiLimiter = rateLimit({
 
 // Apply rate limiters
 app.use('/api', apiLimiter);
+
+// Apply stricter rate limit to AI endpoints (expensive Claude API calls)
+const aiEndpoints = [
+  '/api/summary', '/api/bullets', '/api/notes', '/api/flashcards',
+  '/api/quiz', '/api/action-items', '/api/highlights', '/api/chat',
+  '/api/paraphrase', '/api/translate', '/api/faq', '/api/mindmap',
+  '/api/punctuation', '/api/formal', '/api/casual'
+];
+aiEndpoints.forEach(endpoint => {
+  app.use(endpoint, aiLimiter);
+});
+
+// Request timeout middleware - prevent slow loris attacks
+app.use((req, res, next) => {
+  req.setTimeout(REQUEST_TIMEOUT_MS, () => {
+    if (!res.headersSent) {
+      res.status(408).json({
+        error: 'Request timeout',
+        code: 'REQUEST_TIMEOUT',
+        retryable: true
+      });
+    }
+  });
+  res.setTimeout(REQUEST_TIMEOUT_MS);
+  next();
+});
 
 // Parse JSON with 10mb limit for long transcripts
 app.use(express.json({ limit: '10mb' }));
@@ -118,6 +145,32 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn('WARNING: Running in development mode. Set NODE_ENV=production for production.');
+  }
 });
+
+// Graceful shutdown handlers
+const gracefulShutdown = (signal) => {
+  console.log(`\n${signal} received. Starting graceful shutdown...`);
+
+  server.close((err) => {
+    if (err) {
+      console.error('Error during shutdown:', err);
+      process.exit(1);
+    }
+    console.log('Server closed. Exiting process.');
+    process.exit(0);
+  });
+
+  // Force shutdown after 30 seconds if graceful shutdown fails
+  setTimeout(() => {
+    console.error('Forced shutdown after timeout');
+    process.exit(1);
+  }, 30000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
